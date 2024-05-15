@@ -115,13 +115,13 @@ class GDALOverviewBand final: public GDALProxyRasterBand
     friend class GDALOverviewDataset;
 
     GDALRasterBand*         poUnderlyingBand = nullptr;
-    GDALRasterBand* RefUnderlyingRasterBand() override;
+    GDALRasterBand* RefUnderlyingRasterBand(bool bForceOpen = true) const override;
 
   public:
     GDALOverviewBand( GDALOverviewDataset* poDS, int nBand );
     ~GDALOverviewBand() override;
 
-    CPLErr FlushCache() override;
+    CPLErr FlushCache(bool bAtClosing) override;
 
     int GetOverviewCount() override;
     GDALRasterBand *GetOverview( int ) override;
@@ -576,17 +576,17 @@ GDALOverviewBand::GDALOverviewBand( GDALOverviewDataset* poDSIn, int nBandIn )
 
 GDALOverviewBand::~GDALOverviewBand()
 {
-    GDALOverviewBand::FlushCache();
+    GDALOverviewBand::FlushCache(true);
 }
 
 /************************************************************************/
 /*                              FlushCache()                            */
 /************************************************************************/
 
-CPLErr GDALOverviewBand::FlushCache()
+CPLErr GDALOverviewBand::FlushCache(bool bAtClosing)
 {
     if( poUnderlyingBand )
-        return poUnderlyingBand->FlushCache();
+        return poUnderlyingBand->FlushCache(bAtClosing);
     return CE_None;
 }
 
@@ -594,7 +594,7 @@ CPLErr GDALOverviewBand::FlushCache()
 /*                        RefUnderlyingRasterBand()                     */
 /************************************************************************/
 
-GDALRasterBand* GDALOverviewBand::RefUnderlyingRasterBand()
+GDALRasterBand* GDALOverviewBand::RefUnderlyingRasterBand(bool bForceOpen) const
 {
     if( poUnderlyingBand )
         return poUnderlyingBand;
